@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, RefreshCw, Shield, Check } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Copy, RefreshCw, Shield, Check, ArrowRight } from 'lucide-react';
 import { Button, Label, Card, cn } from '../../components/ui';
 import { generateRandomPassword } from '../../utils/crypto';
 
@@ -62,6 +62,11 @@ const PasswordGenerator = () => {
                             <Button size="sm" onClick={handleCopy}>
                                 {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                                 {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                        </div>
+                        <div className="flex justify-center mt-3">
+                            <Button className="w-full max-w-xs" onClick={() => navigate('/add-credential', { state: { password } })}>
+                                Use Password <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </div>
                     </div>

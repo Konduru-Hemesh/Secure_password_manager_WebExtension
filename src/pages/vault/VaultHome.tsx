@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Search, LogOut, Key, ShieldCheck, Settings, Copy } from 'lucide-react';
-import { Button, Input, Card, cn } from '../../components/ui';
+import { Plus, Search, LogOut, Key, ShieldCheck, Settings, Copy, Cloud, CloudOff, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Button, Input, Card, cn, Toast, type ToastType } from '../../components/ui';
 import { useVaultStore } from '../../store/vaultStore';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ const VaultHome = () => {
     const { credentials, syncStatus } = useVaultStore();
     const logout = useAuthStore((state) => state.logout);
     const [search, setSearch] = useState('');
+    const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
     const filteredCredentials = credentials.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -20,12 +21,22 @@ const VaultHome = () => {
 
     const handleCopy = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
-        // In a real app, show a toast here
-        console.log(`${label} copied!`);
+        setToast({ message: `${label} copied to clipboard`, type: 'success' });
+    };
+
+    const getSyncIcon = () => {
+        switch (syncStatus) {
+            case 'synced': return <Cloud className="w-4 h-4 text-emerald-500" />;
+            case 'syncing': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+            case 'offline': return <CloudOff className="w-4 h-4 text-muted-foreground" />;
+            case 'error': return <AlertTriangle className="w-4 h-4 text-destructive" />;
+            default: return <Cloud className="w-4 h-4 text-muted-foreground" />;
+        }
     };
 
     return (
         <div className="flex flex-col h-full">
+            {/* Header */}
             {/* Header */}
             <div className="p-4 border-b bg-card sticky top-0 z-10 space-y-4">
                 <div className="flex items-center justify-between">
@@ -36,6 +47,9 @@ const VaultHome = () => {
                         <h1 className="font-bold text-lg">ZeroVault</h1>
                     </div>
                     <div className="flex items-center space-x-1">
+                        <div className="mr-2" title={`Sync Status: ${syncStatus}`}>
+                            {getSyncIcon()}
+                        </div>
                         <Button variant="ghost" size="icon" onClick={() => navigate('/generator')} className="h-8 w-8">
                             <Key className="w-4 h-4" />
                         </Button>
@@ -85,7 +99,17 @@ const VaultHome = () => {
                 <NavButton icon={<Key className="w-5 h-5" />} label="Generator" onClick={() => navigate('/generator')} />
                 <NavButton icon={<Settings className="w-5 h-5" />} label="Settings" onClick={() => navigate('/settings')} />
             </div>
-        </div>
+
+            {
+                toast && (
+                    <Toast
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => setToast(null)}
+                    />
+                )
+            }
+        </div >
     );
 };
 
