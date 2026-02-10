@@ -86,3 +86,5 @@ export const Label = ({ className, children, ...props }: React.LabelHTMLAttribut
         {children}
     </label>
 );
+
+export * from './Toast';

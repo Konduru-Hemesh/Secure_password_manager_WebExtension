@@ -7,7 +7,7 @@ import { useAuthStore } from './authStore';
 import { syncService } from '../services/sync.service';
 
 interface VaultStore extends VaultState {
-    addCredential: (credential: Omit<Credential, 'id' | 'lastUpdated'>) => Promise<void>;
+    addCredential: (credential: Omit<Credential, 'id' | 'lastUpdated' | 'version'>) => Promise<void>;
     updateCredential: (id: string, updates: Partial<Credential>) => Promise<void>;
     deleteCredential: (id: string) => Promise<void>;
     setSyncStatus: (status: SyncStatus) => void;
@@ -41,6 +41,7 @@ export const useVaultStore = create<VaultStore>()(
                     ...credential,
                     id: crypto.randomUUID(),
                     lastUpdated: Date.now(),
+                    version: 1,
                 };
 
                 set((state) => ({
@@ -58,7 +59,7 @@ export const useVaultStore = create<VaultStore>()(
             updateCredential: async (id, updates) => {
                 set((state) => ({
                     credentials: state.credentials.map((c) =>
-                        c.id === id ? { ...c, ...updates, lastUpdated: Date.now() } : c
+                        c.id === id ? { ...c, ...updates, lastUpdated: Date.now(), version: (c.version || 0) + 1 } : c
                     ),
                     syncStatus: 'pending'
                 }));

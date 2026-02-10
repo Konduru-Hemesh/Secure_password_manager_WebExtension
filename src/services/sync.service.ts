@@ -2,7 +2,6 @@ import type { Credential, SyncStatus } from '../utils/types';
 
 export interface SyncItem extends Credential {
     deleted?: boolean;
-    version: number;
 }
 
 export interface SyncResponse {

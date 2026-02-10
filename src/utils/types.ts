@@ -7,6 +7,7 @@ export interface Credential {
     notes?: string;
     tags?: string[];
     lastUpdated: number;
+    version: number;
 }
 
 export type SyncStatus = 'synced' | 'pending' | 'syncing' | 'offline' | 'error';

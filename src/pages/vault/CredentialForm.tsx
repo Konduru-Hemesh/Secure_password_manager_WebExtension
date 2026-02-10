@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, Trash2, Eye, EyeOff, Globe, User, Lock, FileText, Check } from 'lucide-react';
 import { Button, Input, Label, Card } from '../../components/ui';
 import { useVaultStore } from '../../store/vaultStore';
@@ -7,6 +7,7 @@ import { useVaultStore } from '../../store/vaultStore';
 const CredentialForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const location = useLocation();
     const { credentials, addCredential, updateCredential, deleteCredential } = useVaultStore();
 
     const [formData, setFormData] = useState({
@@ -32,8 +33,10 @@ const CredentialForm = () => {
                     notes: credential.notes || '',
                 });
             }
+        } else if (location.state?.password) {
+            setFormData(prev => ({ ...prev, password: location.state.password }));
         }
-    }, [id, credentials]);
+    }, [id, credentials, location.state]);
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
