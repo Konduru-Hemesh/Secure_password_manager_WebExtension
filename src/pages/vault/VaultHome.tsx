@@ -6,6 +6,19 @@ import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import type { Credential } from '../../utils/types';
 
+/**
+ * VaultHome Component
+ * 
+ * The main dashboard for the user's vault.
+ * Displays a list of stored credentials with search and filtering capabilities.
+ * 
+ * Key Features:
+ * - **Credential List**: Displays all stored passwords and secure notes.
+ * - **Search**: Real-time filtering by name, username, or URL.
+ * - **Sync Status**: Visual feedback on the vault's synchronization state (Synced, Syncing, Offline, Error).
+ * - **Navigation**: Access to Add Item, Generator, and Settings pages.
+ * - **Clipboard Actions**: Quick copy for usernames and passwords.
+ */
 const VaultHome = () => {
     const navigate = useNavigate();
     const { credentials, syncStatus } = useVaultStore();
@@ -19,11 +32,22 @@ const VaultHome = () => {
         c.url.toLowerCase().includes(search.toLowerCase())
     );
 
+    /**
+     * Copies text to the clipboard and shows a toast notification.
+     * 
+     * @param text - The text to copy (e.g., password or username).
+     * @param label - The label of the item being copied (used in the toast message).
+     */
     const handleCopy = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
         setToast({ message: `${label} copied to clipboard`, type: 'success' });
     };
 
+    /**
+     * Returns the appropriate icon based on the current sync status.
+     * 
+     * @returns A React Node representing the sync state icon.
+     */
     const getSyncIcon = () => {
         switch (syncStatus) {
             case 'synced': return <Cloud className="w-4 h-4 text-emerald-500" />;
@@ -113,6 +137,16 @@ const VaultHome = () => {
     );
 };
 
+/**
+ * CredentialItem Component
+ * 
+ * Renders a single credential card in the list.
+ * Supports hover actions for quick copying of username and password.
+ * 
+ * @param item - The credential object to display.
+ * @param onCopy - Callback function to handle clipboard copy events.
+ * @param onEdit - Callback function to navigate to the edit page.
+ */
 const CredentialItem = ({ item, onCopy, onEdit }: { item: Credential, onCopy: (text: string, label: string) => void, onEdit: () => void }) => (
     <Card className="p-3 hover:bg-accent/50 transition-colors cursor-pointer group" onClick={onEdit}>
         <div className="flex items-center justify-between">

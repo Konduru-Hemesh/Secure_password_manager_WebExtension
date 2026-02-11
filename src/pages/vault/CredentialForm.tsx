@@ -4,6 +4,18 @@ import { ArrowLeft, Save, Trash2, Eye, EyeOff, Globe, User, Lock, FileText, Chec
 import { Button, Input, Label, Card } from '../../components/ui';
 import { useVaultStore } from '../../store/vaultStore';
 
+/**
+ * CredentialForm Component
+ * 
+ * A dual-purpose form for creating and editing vault credentials.
+ * Handles input validation, state management, and interaction with the `VaultStore`.
+ * 
+ * Key Features:
+ * - **Unification**: Used for both adding new items and editing existing ones (based on `id` param).
+ * - **Security**: Includes a password visibility toggle and a generator link.
+ * - **State Management**: Local state for form inputs, synced with global store for edits.
+ * - **Feedback**: Provides visual feedback during save operations (loading/saved states).
+ */
 const CredentialForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -38,6 +50,19 @@ const CredentialForm = () => {
         }
     }, [id, credentials, location.state]);
 
+    /**
+     * Handles the form submission for saving credentials.
+     * 
+     * @param e - The form submission event.
+     * 
+     * Workflow:
+     * 1. Prevents default form submission.
+     * 2. Sets loading state to prevent double submission.
+     * 3. Determines action based on presence of `id`:
+     *    - **Updates** existing credential if `id` exists.
+     *    - **Adds** new credential if no `id` exists.
+     * 4. Provides success feedback and navigates back to the vault.
+     */
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -54,6 +79,16 @@ const CredentialForm = () => {
         }, 500);
     };
 
+    /**
+     * Handles the deletion of the current credential.
+     * Requires user confirmation before proceeding.
+     * 
+     * Workflow:
+     * 1. Checks if `id` is present.
+     * 2. Prompts user for confirmation via browser dialog.
+     * 3. Calls `deleteCredential` from store.
+     * 4. Navigates back to the vault.
+     */
     const handleDelete = () => {
         if (id && window.confirm('Are you sure you want to delete this item?')) {
             deleteCredential(id);
