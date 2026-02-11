@@ -125,6 +125,41 @@ All vault data is encrypted using **AES-GCM** (Advanced Encryption Standard - Ga
 | **Icons** | [Lucide React](https://lucide.dev/) | Consistent Iconography |
 | **Crypto** | [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) | Native Browser Security |
 
+
+## 🧪 Testing & Quality Assurance
+
+ZeroVault maintains high code quality standards through a comprehensive unit testing suite powered by **Vitest** and **React Testing Library**.
+
+### Testing Strategy
+
+-   **Unit Tests**: Verify the logic of individual functions, hooks, and utilities (e.g., `crypto.ts`, `formDetector.ts`).
+-   **Component Tests**: Ensure UI components render correctly and interact as expected (e.g., `VaultHome.tsx`, `PasswordGenerator.tsx`).
+-   **Integration Tests**: Validate the interaction between stores and services (e.g., `VaultStore` with `chrome.storage`).
+
+### Running Tests
+
+To execute the test suite, use the following commands:
+
+```bash
+# Run all tests once
+npm test
+
+# Run tests in watch mode (interactive)
+npm run test:watch
+
+# Generate code coverage report
+npm run test:coverage
+```
+
+### Coverage Goals
+
+We aim for high test coverage across critical paths, particularly in:
+-   **Cryptography Modules**: Ensuring key derivation and encryption/decryption are flawless.
+-   **Vault Operations**: Verifying CRUD actions and data integrity.
+-   **Authentication Flow**: guaranteeing secure unlock and locking mechanisms.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
