@@ -6,6 +6,12 @@ import { saveCredentials } from '../services/storage';
 import { useAuthStore } from './authStore';
 import { syncService } from '../services/sync.service';
 
+/**
+ * VaultStore Interface
+ * 
+ * Defines the shape of the vault state and actions.
+ * Manages the user's credentials, lock status, and synchronization.
+ */
 interface VaultStore extends VaultState {
     addCredential: (credential: Omit<Credential, 'id' | 'lastUpdated' | 'version'>) => Promise<void>;
     updateCredential: (id: string, updates: Partial<Credential>) => Promise<void>;
@@ -18,6 +24,14 @@ interface VaultStore extends VaultState {
 }
 
 // Helper to save to storage
+/**
+ * Helper: persistToStorage
+ * 
+ * Encrypts and saves the current list of credentials to the underlying storage service.
+ * Requires a valid encryption key from the AuthStore.
+ * 
+ * @param credentials - The list of credentials to save.
+ */
 const persistToStorage = async (credentials: Credential[]) => {
     const key = useAuthStore.getState().encryptionKey;
     if (key) {
@@ -28,6 +42,18 @@ const persistToStorage = async (credentials: Credential[]) => {
     }
 };
 
+/**
+ * useVaultStore Hook
+ * 
+ * A Zustand store for managing the vault's contents and state.
+ * Handles CRUD operations for credentials, locking/unlocking, and synchronization.
+ * 
+ * Key Features:
+ * - **Credential Management**: Add, update, delete credentials with automatic versioning.
+ * - **Security**: Manages the `isLocked` state to protect the UI.
+ * - **Synchronization**: Triggers sync operations via `syncService`.
+ * - **Persistence**: Persists UI state (locked status, sync status) while delegating secure credential storage to `persistToStorage`.
+ */
 export const useVaultStore = create<VaultStore>()(
     persist(
         (set, get) => ({

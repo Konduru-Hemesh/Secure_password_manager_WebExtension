@@ -7,6 +7,18 @@ import { useVaultStore } from '../../store/vaultStore';
 import { deriveMasterKey } from '../../utils/crypto';
 import { sendToBackground, MessageType } from '../../utils/messaging';
 
+/**
+ * Login Component
+ * 
+ * Handles the Master Password Unlock feature for the application.
+ * This component is the entry point for accessing the encrypted vault.
+ * 
+ * Key Responsibilities:
+ * 1. Accepts the user's Master Password.
+ * 2. Derives the encryption key using PBKDF2 (via `deriveMasterKey`).
+ * 3. Validates the derived key against the stored hash.
+ * 4. On success, decrypts the vault and loads credentials into the state.
+ */
 const Login = () => {
     const navigate = useNavigate();
     const { isRegistered, masterPasswordHash, vaultSalt, setAuthenticated } = useAuthStore();
@@ -23,6 +35,22 @@ const Login = () => {
         }
     }, [isRegistered, navigate]);
 
+    /**
+     * Handles the vault unlock process.
+     * 
+     * @param e - The form submission event.
+     * 
+     * Workflow:
+     * 1. Prevents default form submission.
+     * 2. Derives the Master Key from the input password and stored salt.
+     * 3. Compares the derived hash with the stored `masterPasswordHash`.
+     * 4. If valid:
+     *    - Updates global auth state (`setAuthenticated`).
+     *    - Sends the session key to the background script for auto-fill operations.
+     *    - Asynchronously loads and decrypts user credentials.
+     *    - Unlocks the UI and redirects to the Vault Dashboard.
+     * 5. If invalid: Displays an error message.
+     */
     const handleUnlock = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
