@@ -1,138 +1,193 @@
 # ZeroVault: Zero-Knowledge Password Manager
 
-![ZeroVault Banner](public/vite.svg)
+<div align="center">
+  <img src="public/vite.svg" alt="ZeroVault Logo" width="120" height="120" />
+  <h1>ZeroVault</h1>
+  <p><strong>The Secure, Local-First, Zero-Knowledge Password Manager for Your Browser.</strong></p>
 
-> **Securely store and manage your passwords with Zero-Knowledge encryption.**
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![React](https://img.shields.io/badge/React-19.0-blue)](https://react.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+  [![Vite](https://img.shields.io/badge/Vite-5.0-646CFF)](https://vitejs.dev/)
+  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC)](https://tailwindcss.com/)
+  [![Security](https://img.shields.io/badge/Security-Zero--Knowledge-green)](https://en.wikipedia.org/wiki/Zero-knowledge_proof)
+</div>
 
-ZeroVault is a modern, secure, and user-friendly browser extension designed to keep your digital life safe. Built with a "Zero-Knowledge" architecture, it ensures that your data is encrypted locally on your device before it's ever stored, meaning only *you* have access to your passwords.
+---
 
-## Table of Contents
+## 📖 Introduction
 
-- [Intro](#intro)
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installing and Running](#installing-and-running)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+**ZeroVault** is a modern browser extension engineered to provide top-tier security without compromising on user experience. Unlike traditional password managers that store your data on centralized servers, ZeroVault adopts a **Local-First** and **Zero-Knowledge** architecture.
 
-## Intro
+Your passwords are encrypted **on your device** using your master password. We never see your password, your keys, or your data. You are the only one who holds the keys to your digital vault.
 
-In an age of increasing data breaches, trusting third parties with your passwords is risky. ZeroVault solves this by implementing client-side encryption. Your master password never leaves your device, and your vault is encrypted using AES-GCM before being saved to local storage.
+## 🏗️ Architecture
 
-## About
+ZeroVault operates entirely within your browser environment. The extension is composed of three main isolated contexts that communicate securely.
 
-ZeroVault was built to provide a seamless, secure password management experience directly in your browser. It combines robust security practices with a clean, modern UI powered by React and TailwindCSS.
+```mermaid
+graph TD
+    subgraph "Browser Extension Environment"
+        UI[<b>Popup / Options UI</b><br/>React + Tailwind]
+        BG[<b>Background Script</b><br/>Service Worker]
+        CS[<b>Content Script</b><br/>DOM Interaction]
+        Vault[(<b>Encrypted Storage</b><br/>Chrome Local Storage)]
+    end
 
-### Key Principles
-- **Zero-Knowledge**: We cannot see your data.
-- **Local-First**: Data persists locally on your device.
-- **Open Source**: Verify the code yourself.
+    subgraph "External World"
+        Web[<b>Web Page</b><br/>Login Forms]
+    end
 
-## Features
+    User((<b>User</b>)) <--> UI
+    UI <-->|Messages| BG
+    BG <-->|Read/Write Encrypted Data| Vault
+    CS <-->|Detect Forms / Autofill| Web
+    CS <-->|Request Credentials| BG
+```
 
-- 🔐 **Zero-Knowledge Encryption**: AES-GCM encryption with PBKDF2 key derivation.
-- 📝 **Credential Management**: Add, edit, and delete passwords easily.
-- ⚡ **Auto-fill**: Automatically detects login forms and offers to fill credentials.
-- 🛡️ **Security Audit**: Analyze your vault for weak or reused passwords.
-- 🎲 **Password Generator**: Generate strong, unique passwords instantly.
-- ☁️ **Sync Capable**: Built-in architecture to support multi-device sync (Mock service currently implemented).
-- 🎨 **Modern UI**: Clean, responsive interface providing a premium user experience.
+### Data Flow
+1.  **Unlock**: User enters Master Password -> Key is derived in memory (Session).
+2.  **Storage**: Credentials are encrypted with AES-GCM before saving to `chrome.storage.local`.
+3.  **Autofill**: Content Script detects a login form -> Requests credentials from Background -> Background decrypts using Session Key -> Sends back to Content Script -> Autofill.
 
-## Tech Stack
+## 🛡️ Security
 
-**Frontend & Extension Core:**
-- **React 19**: Library for building user interfaces.
-- **TypeScript**: Static typing for reliability.
-- **Vite**: Next-generation frontend tooling.
-- **TailwindCSS**: Utility-first CSS framework for styling.
-- **Zustand**: Small, fast, and scalable state management.
-- **React Router**: Declarative routing for React.
-- **Lucide React**: Beautiful & consistent icons.
-- **CRXJS**: Vite plugin for Chrome Extension development.
+ZeroVault uses industry-standard cryptographic primitives provided by the **Web Crypto API**.
 
-**Security:**
-- **Web Crypto API**: Native browser cryptography for AES-GCM and PBKDF2.
+### 1. Key Derivation (PBKDF2)
+Your Master Password is never stored. Instead, we derive a cryptographic key from it using **PBKDF2** (Password-Based Key Derivation Function 2) with a unique salt for each user.
 
-## Installing and Running
+```typescript
+// src/utils/crypto.ts
+export const deriveMasterKey = async (password: string, salt: string): Promise<string> => {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        { name: "PBKDF2" },
+        false,
+        ["deriveBits", "deriveKey"]
+    );
+
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: Uint8Array.from(atob(salt), c => c.charCodeAt(0)),
+            iterations: 100000, // High iteration count for security
+            hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+    // ... export key as JWK
+};
+```
+
+### 2. Encryption (AES-GCM)
+All vault data is encrypted using **AES-GCM** (Advanced Encryption Standard - Galois/Counter Mode) with a 256-bit key. GCM mode provides both confidentiality and data integrity (authentication).
+
+## ✨ Features
+
+-   🔐 **Zero-Knowledge Encryption**: Your data is encrypted before it leaves your input field.
+-   📝 **Credential Management**: Create, Read, Update, and Delete login credentials.
+-   ⚡ **Smart Autofill**: Automatically detects login forms and offers to fill them securely.
+-   🎨 **Modern UI**: A beautiful, dark-mode enabled interface built with **Shadcn UI** principles.
+-   🛡️ **Security Dashboard**: Analyzes password strength and reuse to keep you safe.
+-   🎲 **Password Generator**: Built-in CSPRNG password generator.
+-   ⏱️ **Auto-Lock**: Automatically locks the vault after a period of inactivity.
+-   🔄 **Sync Ready**: Architecture designed to support encrypted sync (Mock implementation included).
+
+## 🛠️ Tech Stack
+
+| Category | Technology | Purpose |
+|----------|------------|---------|
+| **Core** | [React 19](https://react.dev/) | UI Library |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) | Type Safety |
+| **Build Tool** | [Vite](https://vitejs.dev/) | Fast Bundling |
+| **Extension** | [CRXJS](https://crxjs.dev/vite-plugin) | Vite Plugin for Chrome Extensions |
+| **Styling** | [TailwindCSS](https://tailwindcss.com/) | Utility-First Styling |
+| **State** | [Zustand](https://zustand-demo.pmnd.rs/) | Global State Management |
+| **Routing** | [React Router](https://reactrouter.com/) | View Navigation |
+| **Icons** | [Lucide React](https://lucide.dev/) | Consistent Iconography |
+| **Crypto** | [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) | Native Browser Security |
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+-   Node.js (v18 or higher)
+-   npm (v9 or higher)
 
 ### Installation
 
-1.  **Clone the repository**
+1.  **Clone the Repository**
     ```bash
     git clone https://github.com/yourusername/zerovault.git
     cd zerovault
     ```
 
-2.  **Install dependencies**
+2.  **Install Dependencies**
     ```bash
     npm install
     ```
 
-3.  **Build the extension**
+3.  **Build the Project**
     ```bash
     npm run build
     ```
+    This will generate a `dist` folder containing the compiled extension.
 
-### Loading into Chrome/Edge
+### Loading into Chrome / Edge / Brave
 
 1.  Open your browser and navigate to `chrome://extensions`.
-2.  Enable **Developer Mode** (toggle in the top right).
+2.  Toggle **Developer Mode** in the top right corner.
 3.  Click **Load unpacked**.
-4.  Select the `dist` folder created in your project directory.
+4.  Select the `dist` folder from your project directory.
+5.  ZeroVault is now installed! Pin it to your toolbar for easy access.
 
 ### Development Mode
-
-To run in watch mode (updates automatically as you change code):
+To run in watch mode with Hot Module Replacement (HMR):
 ```bash
 npm run dev
 ```
 
-## Usage
-
-1.  **Welcome**: On first install, you will be prompted to create a Master Password.
-2.  **Unlock**: Use your Master Password to unlock the vault.
-3.  **Add Credentials**: Click the "+" button to save new login details.
-4.  **Auto-fill**: Navigate to a login page (e.g., github.com). If you have saved credentials, a ZeroVault icon will appear in the password field. Click it to fill.
-5.  **Audit**: Go to **Settings > Security Dashboard** to check your password health.
-
-## Project Structure
+## 📂 Project Structure
 
 ```
-Web_Extension
-├── public/                 # Static assets
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── layout/         # Layout wrappers
-│   │   ├── modals/         # Modal components
-│   │   └── ui/             # Base UI elements (Inputs, Buttons)
-│   ├── extension/          # Extension-specific scripts
-│   │   ├── background/     # Service worker
-│   │   ├── contentScript/  # DOM interaction scripts
-│   │   └── popup/          # Extension popup entry point
-│   ├── hooks/              # Custom React hooks
-│   ├── pages/              # Application views (Vault, Settings, Auth)
-│   ├── services/           # External services (Storage, Sync)
-│   ├── store/              # State management (Zustand)
-│   └── utils/              # Helpers (Crypto, Types)
-├── manifest.json           # Extension manifest
-└── package.json            # Project dependencies
+src/
+├── components/         # Reusable UI components (Buttons, Inputs, Modals)
+├── extension/          # Extension-specific entry points
+│   ├── background/     # Service Worker (encryption, storage handling)
+│   ├── contentScript/  # DOM injection (autofill, form detection)
+│   └── popup/          # Main extension UI entry
+├── hooks/              # Custom React hooks (useToast, etc.)
+├── pages/              # Application Views
+│   ├── auth/           # Login, Register, Welcome screens
+│   ├── generator/      # Password Generator view
+│   ├── settings/       # Settings & subpages
+│   └── vault/          # Main Vault Dashboard
+├── services/           # Business logic services (Storage, Sync)
+├── store/              # Zustand state stores (AuthStore, VaultStore)
+└── utils/              # Core utilities (Crypto, Types, URL Matching)
 ```
 
-## Troubleshooting
+## 🤝 Contributing
 
-### Extension not loading changes?
-If you are in `npm run dev` mode, most changes reload automatically. However, changes to `manifest.json` or background scripts may require you to reload the extension manually from the `chrome://extensions` page.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Password not filling?
-Ensure the website's form fields are standard `<input>` elements. ZeroVault detects forms based on standard HTML attributes.
+1.  Fork the project.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
 
-## License
+## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by the ZeroVault Team.</sub>
+</div>
