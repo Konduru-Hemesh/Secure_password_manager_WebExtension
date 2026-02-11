@@ -26,6 +26,8 @@ const VaultHome = () => {
     const [search, setSearch] = useState('');
     const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
+
+
     const filteredCredentials = credentials.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.username.toLowerCase().includes(search.toLowerCase()) ||
@@ -91,6 +93,13 @@ const VaultHome = () => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                    {/* <input
+                        placeholder="Search vault..."
+                        className="pl-9 h-10 w-full"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        data-testid="search-input-debug"
+                    /> */}
                 </div>
             </div>
 
@@ -165,6 +174,7 @@ const CredentialItem = ({ item, onCopy, onEdit }: { item: Credential, onCopy: (t
                     size="icon"
                     className="h-8 w-8"
                     onClick={(e) => { e.stopPropagation(); onCopy(item.password, 'Password'); }}
+                    data-testid="copy-password-btn"
                 >
                     <Key className="w-4 h-4" />
                 </Button>

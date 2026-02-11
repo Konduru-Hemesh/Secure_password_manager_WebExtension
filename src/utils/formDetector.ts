@@ -135,7 +135,8 @@ export function isLoginForm(form: HTMLFormElement): boolean {
     }
 
     // Check specific submit buttons, which is more reliable than general form text
-    const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    // Check specific submit buttons (including implicit ones)
+    const submitBtn = form.querySelector('button:not([type="button"]):not([type="reset"]), input[type="submit"]');
     if (submitBtn) {
         const btnText = submitBtn.textContent?.toLowerCase() || (submitBtn as HTMLInputElement).value?.toLowerCase() || '';
         if (btnText.includes('sign up') || btnText.includes('create account') || btnText.includes('register')) {

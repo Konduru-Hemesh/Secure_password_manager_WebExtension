@@ -21,6 +21,7 @@ interface VaultStore extends VaultState {
     clearVault: () => void;
     setCredentials: (credentials: Credential[]) => void;
     syncVault: () => Promise<void>;
+    reset: () => void;
 }
 
 // Helper to save to storage
@@ -132,6 +133,16 @@ export const useVaultStore = create<VaultStore>()(
                     console.error('VaultStore: Sync failed', error);
                     setSyncStatus('error');
                 }
+            },
+
+            reset: () => {
+                set({
+                    isLocked: true,
+                    credentials: [],
+                    syncStatus: 'synced',
+                    lastSynced: Date.now(),
+                });
+                localStorage.removeItem('zerovault-vault-storage');
             }
         }),
         {
