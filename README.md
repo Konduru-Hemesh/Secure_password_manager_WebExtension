@@ -15,6 +15,18 @@
 
 ---
 
+## 📋 Table of Contents
+
+- [Introduction](#-introduction)
+- [Architecture](#%EF%B8%8F-architecture)
+- [Security](#%EF%B8%8F-security)
+- [Features](#-features)
+- [Tech Stack](#%EF%B8%8F-tech-stack)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## 📖 Introduction
 
 **ZeroVault** is a modern browser extension engineered to provide top-tier security without compromising on user experience. Unlike traditional password managers that store your data on centralized servers, ZeroVault adopts a **Local-First** and **Zero-Knowledge** architecture.
@@ -28,17 +40,17 @@ ZeroVault operates entirely within your browser environment. The extension is co
 ```mermaid
 graph TD
     subgraph "Browser Extension Environment"
-        UI[<b>Popup / Options UI</b><br/>React + Tailwind]
-        BG[<b>Background Script</b><br/>Service Worker]
-        CS[<b>Content Script</b><br/>DOM Interaction]
-        Vault[(<b>Encrypted Storage</b><br/>Chrome Local Storage)]
+        UI["Popup / Options UI\n(React + Tailwind)"]
+        BG["Background Script\n(Service Worker)"]
+        CS["Content Script\n(DOM Interaction)"]
+        Vault[("Encrypted Storage\n(Chrome Local Storage)")]
     end
 
     subgraph "External World"
-        Web[<b>Web Page</b><br/>Login Forms]
+        Web["Web Page\n(Login Forms)"]
     end
 
-    User((<b>User</b>)) <--> UI
+    User(("User")) <--> UI
     UI <-->|Messages| BG
     BG <-->|Read/Write Encrypted Data| Vault
     CS <-->|Detect Forms / Autofill| Web
