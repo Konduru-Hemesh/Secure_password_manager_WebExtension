@@ -46,7 +46,7 @@ const SecurityDashboard = () => {
                             )}
                         </div>
                     </div>
-                    <h2 className="text-lg font-bold">Security Score</h2>
+                    <h2 className="text-lg font-bold">Security Scoree</h2>
                     <p className="text-sm text-muted-foreground">
                         {score > 80 ? 'Your vault is secure.' : 'Action needed to improve security.'}
                     </p>
