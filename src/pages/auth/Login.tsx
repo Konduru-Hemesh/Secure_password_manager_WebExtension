@@ -64,7 +64,7 @@ const Login = () => {
                         <Lock className="w-10 h-10 text-primary" />
                     </div>
                 </div>
-                <h1 className="text-2xl font-bold">Unlock Vault</h1>
+                <h1 className="text-2xl font-bold">Unlock Vaultt</h1>
                 <p className="text-sm text-muted-foreground">Enter your master password to continue</p>
             </div>
 
