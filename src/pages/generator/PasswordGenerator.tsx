@@ -4,6 +4,18 @@ import { ArrowLeft, Copy, RefreshCw, Shield, Check, ArrowRight } from 'lucide-re
 import { Button, Label, Card, cn } from '../../components/ui';
 import { generateRandomPassword } from '../../utils/crypto';
 
+/**
+ * PasswordGenerator Component
+ * 
+ * Provides a UI for generating strong, random passwords with customizable criteria.
+ * Users can adjust length and character sets (uppercase, lowercase, numbers, symbols).
+ * 
+ * Key Features:
+ * - **Customizability**: Toggleable options for character types.
+ * - **Strength Meter**: Visual feedback on password strength based on length.
+ * - **Clipboard Integration**: One-click copy functionality.
+ * - **Integration**: Direct link to use the generated password in a new credential.
+ */
 const PasswordGenerator = () => {
     const navigate = useNavigate();
     const [password, setPassword] = useState('');
@@ -20,18 +32,32 @@ const PasswordGenerator = () => {
         handleGenerate();
     }, [length, options]);
 
+    /**
+     * Generates a new random password based on the current configuration.
+     * Uses `generateRandomPassword` from the crypto utility.
+     * Resets the 'copied' state.
+     */
     const handleGenerate = () => {
         const newPwd = generateRandomPassword(length, options);
         setPassword(newPwd);
         setCopied(false);
     };
 
+    /**
+     * Copies the current password to the system clipboard.
+     * Provides visual feedback ('Copied!') for 2 seconds.
+     */
     const handleCopy = () => {
         navigator.clipboard.writeText(password);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
+    /**
+     * Evaluates the strength of the generated password based on its length.
+     * 
+     * @returns An object containing the strength label ('Weak', 'Good', 'Strong') and corresponding color class.
+     */
     const getStrength = () => {
         if (length < 10) return { label: 'Weak', color: 'bg-destructive' };
         if (length < 14) return { label: 'Good', color: 'bg-yellow-500' };

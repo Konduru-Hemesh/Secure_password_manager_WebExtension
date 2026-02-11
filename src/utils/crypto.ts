@@ -5,12 +5,31 @@
  */
 
 // Generate a random salt
+/**
+ * Generates a cryptographically secure random salt.
+ * Uses `crypto.getRandomValues` to ensure high entropy.
+ * 
+ * @returns A base64 encoded string representing the salt.
+ */
 export const generateSalt = (): string => {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     return btoa(String.fromCharCode(...salt));
 };
 
 // Derive a key from a password using PBKDF2
+/**
+ * Derives a cryptographic master key from the user's password and a salt.
+ * Implements PBKDF2 (Password-Based Key Derivation Function 2) with SHA-256.
+ * 
+ * Configuration:
+ * - Iterations: 100,000 (balances security and performance)
+ * - Hash: SHA-256
+ * - Algorithm: AES-GCM (256-bit key)
+ * 
+ * @param password - The user's master password.
+ * @param salt - The unique vault salt.
+ * @returns A promise that resolves to the exported key in JWK format string.
+ */
 export const deriveMasterKey = async (password: string, salt: string): Promise<string> => {
     const enc = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
@@ -52,6 +71,16 @@ const importKey = async (keyString: string): Promise<CryptoKey> => {
 };
 
 // Encrypt data using AES-GCM
+/**
+ * Encrypts sensitive vault data using AES-GCM.
+ * Generates a unique Initialization Vector (IV) for each encryption operation.
+ * 
+ * Format: IV (12 bytes) + Encrypted Data
+ * 
+ * @param data - The plaintext string to encrypt.
+ * @param keyString - The JWK string of the encryption key.
+ * @returns A promise that resolves to a base64 encoded string containing the IV and ciphertext.
+ */
 export const encryptVaultData = async (data: string, keyString: string): Promise<string> => {
     const key = await importKey(keyString);
     const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -75,6 +104,14 @@ export const encryptVaultData = async (data: string, keyString: string): Promise
 };
 
 // Decrypt data using AES-GCM
+/**
+ * Decrypts vault data using AES-GCM.
+ * Extracts the IV from the beginning of the encrypted string.
+ * 
+ * @param encryptedData - The base64 encoded string containing IV and ciphertext.
+ * @param keyString - The JWK string of the decryption key.
+ * @returns A promise that resolves to the decrypted plaintext string.
+ */
 export const decryptVaultData = async (encryptedData: string, keyString: string): Promise<string> => {
     const key = await importKey(keyString);
 
@@ -95,6 +132,14 @@ export const decryptVaultData = async (encryptedData: string, keyString: string)
     return dec.decode(decrypted);
 };
 
+/**
+ * Generates a random password using a Cryptographically Secure Pseudo-Random Number Generator (CSPRNG).
+ * Ensures uniform distribution of characters to prevent bias.
+ * 
+ * @param length - The length of the password to generate.
+ * @param options - Configuration for character sets to include (uppercase, lowercase, numbers, symbols).
+ * @returns The generated random password string.
+ */
 export const generateRandomPassword = (length: number, options: {
     uppercase: boolean;
     lowercase: boolean;
