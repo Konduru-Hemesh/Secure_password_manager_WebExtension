@@ -62,6 +62,29 @@ graph TD
 2.  **Storage**: Credentials are encrypted with AES-GCM before saving to `chrome.storage.local`.
 3.  **Autofill**: Content Script detects a login form -> Requests credentials from Background -> Background decrypts using Session Key -> Sends back to Content Script -> Autofill.
 
+### Domain Verification Flow
+
+```mermaid
+sequenceDiagram
+    participant Extension
+    participant DomainVerifier
+    participant ClientVault
+    participant Audit
+
+    Extension->>DomainVerifier: Canonicalize + Verify Domain
+
+    alt Valid Domain
+        DomainVerifier-->>Extension: TRUSTED (Green)
+        Extension->>ClientVault: Request Password
+        ClientVault-->>Extension: Password
+        Extension->>Extension: Autofill
+        Extension->>Extension: Clear Clipboard Timer
+    else Invalid
+        DomainVerifier-->>Extension: BLOCKED (Red)
+        Extension->>Audit: Log Blocked Attempt
+    end
+```
+
 ## 🛡️ Security
 
 ZeroVault uses industry-standard cryptographic primitives provided by the **Web Crypto API**.
